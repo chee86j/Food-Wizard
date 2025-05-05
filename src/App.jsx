@@ -35,7 +35,7 @@ function App() {
   return (
     <div className="min-h-screen bg-white">
       <header className="p-3 border-b">
-        <h1 className="text-xl font-bold">Food Wizard</h1>
+        <h1 className="text-3xl font-bold">Food Wizard</h1>
       </header>
 
       <main className="p-4 max-w-2xl mx-auto">
