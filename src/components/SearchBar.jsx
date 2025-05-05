@@ -1,6 +1,14 @@
-import { useState } from "react";
-const SearchBar = ({ onSearch, isSearching }) => {
-  const [query, setQuery] = useState("");
+import { useState, useEffect } from "react";
+
+const SearchBar = ({ onSearch, isSearching, initialValue = "" }) => {
+  const [query, setQuery] = useState(initialValue);
+
+  // Update Search Query when IOnitialValue changes
+  useEffect(() => {
+    if (initialValue) {
+      setQuery(initialValue);
+    }
+  }, [initialValue]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
