@@ -3,11 +3,30 @@ const SearchResults = ({ results }) => {
 
   return (
     <div className="p-4">
+      <h2 className="text-xl font-semibold mb-4">Results</h2>
       <div className="grid gap-4">
-        {results.map((result, index) => (
-          <div key={index} className="p-3 border rounded bg-white">
-            <h3 className="font-medium">{result.title}</h3>
-            {/* Add More Reseult Details Here Later */}
+        {results.map((ingredient) => (
+          <div
+            key={ingredient.id}
+            className="p-4 border rounded bg-white shadow-sm"
+          >
+            <div className="flex items-center gap-3">
+              {ingredient.image && (
+                <img
+                  src={`https://spoonacular.com/cdn/ingredients_100x100/${ingredient.image}`}
+                  alt={ingredient.name}
+                  className="w-16 h-16 object-cover rounded"
+                />
+              )}
+              <div>
+                <h3 className="text-lg font-medium">{ingredient.name}</h3>
+                {ingredient.aisle && (
+                  <p className="text-sm text-gray-600">
+                    Aisle: {ingredient.aisle}
+                  </p>
+                )}
+              </div>
+            </div>
           </div>
         ))}
       </div>

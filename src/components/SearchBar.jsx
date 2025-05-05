@@ -1,23 +1,15 @@
 import { useState } from "react";
 
-const SearchBar = ({ onSearch }) => {
-  // State vars to manage search query and loading states
+const SearchBar = ({ onSearch, isSearching }) => {
+  // State vars to manage search query
   const [query, setQuery] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
 
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!query.trim()) return;
 
-    setIsLoading(true);
-    try {
-      await onSearch(query);
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setIsLoading(false);
-    }
+    await onSearch(query);
   };
 
   return (
@@ -28,14 +20,14 @@ const SearchBar = ({ onSearch }) => {
         onChange={(e) => setQuery(e.target.value)}
         placeholder="Searching Ingredients and Recipes..."
         className="flex-1 px-3 py-2 rounded border"
-        disabled={isLoading}
+        disabled={isSearching}
       />
       <button
         type="submit"
-        disabled={isLoading}
+        disabled={isSearching}
         className="px-4 py-2 bg-blue-500 text-white rounded"
       >
-        {isLoading ? "..." : "Search"}
+        {isSearching ? "..." : "Search"}
       </button>
     </form>
   );

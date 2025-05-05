@@ -13,6 +13,8 @@ app.get("/", async (req, res) => {
     return res.status(400).json({ error: "Search Parameter is Required" });
   }
 
+  console.log("API Key:", process.env.SPOONACULAR_API_KEY);
+
   try {
     const response = await axios.get(
       "https://api.spoonacular.com/food/ingredients/search",
