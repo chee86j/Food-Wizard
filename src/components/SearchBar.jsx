@@ -1,7 +1,7 @@
 import { useState } from "react";
 
 const SearchBar = ({ onSearch }) => {
-  // State variables to manage search query and loading states
+  // State vars to manage search query and loading states
   const [query, setQuery] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 

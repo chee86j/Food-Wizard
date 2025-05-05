@@ -1,0 +1,10 @@
+// to help with linter errors specific to node
+{
+  "compilerOptions": {
+    "target": "es2022",
+    "module": "node16",
+    "moduleResolution": "node16",
+    "allowSyntheticDefaultImports": true
+  },
+  "include": ["**/*"]
+}
