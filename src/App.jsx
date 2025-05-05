@@ -33,17 +33,22 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="p-4 text-center">
-        <h1 className="text-2xl font-bold">Food Wizard</h1>
+    <div className="min-h-screen bg-white">
+      <header className="p-3 border-b">
+        <h1 className="text-xl font-bold">Food Wizard</h1>
       </header>
-      <SearchBar onSearch={handleSearch} isSearching={isLoading} />
-      {error && <div className="p-4 text-red-500 text-center">{error}</div>}
-      {isLoading ? (
-        <div className="p-4 text-center">Loading...</div>
-      ) : (
-        <SearchResults results={results} />
-      )}
+
+      <main className="p-4 max-w-2xl mx-auto">
+        <SearchBar onSearch={handleSearch} isSearching={isLoading} />
+
+        {error && <div className="p-2 mb-3 text-red-500">{error}</div>}
+
+        {isLoading ? (
+          <div className="p-4 text-center">Loading...</div>
+        ) : (
+          <SearchResults results={results} />
+        )}
+      </main>
     </div>
   );
 }
