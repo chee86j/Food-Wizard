@@ -8,7 +8,8 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const STORAGE_DIR = path.join(__dirname, "../storage/searches");
 
-// Helper Functions for File Ops
+/* Helper Functions for File Ops - This is used to save search results to a file as a backup
+ */
 export const saveSearchToFile = async (searchData) => {
   try {
     const filename = `${Date.now()}_${searchData.query.replace(

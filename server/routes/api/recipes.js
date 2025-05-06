@@ -1,12 +1,18 @@
 /* global process */
 import express from "express";
 import axios from "axios";
+import { models } from "../../db.js";
+import { saveSearchToFile } from "../../utils/searchHelpers.js";
 
 const app = express.Router();
 
 // Get Recipes by Ingredient
 app.get("/by-ingredient/:ingredient", async (req, res) => {
   const { ingredient } = req.params;
+
+  if (!ingredient || ingredient.trim() === "") {
+    return res.status(400).json({ error: "Ingredient Parameter is Required!" });
+  }
 
   try {
     const response = await axios.get(
@@ -16,16 +22,52 @@ app.get("/by-ingredient/:ingredient", async (req, res) => {
           apiKey: process.env.SPOONACULAR_API_KEY,
           ingredients: ingredient,
           number: 3,
-          ranking: 1,
+          ranking: 1, // Sort by minimizing missing ingredients
           ignorePantry: true,
         },
       }
     );
 
-    res.json(response.data);
+    // Format Response Data for Recipe List
+    const formattedRecipes = response.data.map((recipe) => ({
+      id: recipe.id,
+      title: recipe.title,
+      image: recipe.image,
+      missedIngredientCount: recipe.missedIngredientCount,
+      usedIngredientCount: recipe.usedIngredientCount,
+      likes: recipe.likes,
+      missedIngredients: recipe.missedIngredients.map((ing) => ing.name),
+      usedIngredients: recipe.usedIngredients.map((ing) => ing.name),
+    }));
+
+    // Save query to Search History
+    const searchData = {
+      query: `recipe:${ingredient}`,
+      results: JSON.stringify(formattedRecipes),
+      created_at: new Date(),
+    };
+
+    try {
+      await models.Search.create(searchData);
+    } catch (dbError) {
+      console.error("Database Error Saving Recipe Search:", dbError);
+
+      // Backup to file if DB fails
+      const fileResult = await saveSearchToFile(searchData);
+      if (!fileResult.success) {
+        console.error(
+          "File Backup for Recipe Search Failed:",
+          fileResult.error
+        );
+      }
+    }
+
+    return res.json(formattedRecipes);
   } catch (error) {
-    console.error("Error fetching Recipe Suggestions:", error.message);
-    res.status(500).json({ error: "Failed to fetch Recipe Suggestions" });
+    console.error("Recipe Search Error:", error.message);
+    return res
+      .status(500)
+      .json({ error: "Failed to Fetch Recipe Suggestions" });
   }
 });
 

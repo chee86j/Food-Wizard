@@ -1,6 +1,7 @@
 /* Container for Product Card */
 import { useState } from "react";
 import { formatNutritionValue } from "../utils/helpers";
+import { ChevronDown, ChevronUp, Loader } from "lucide-react";
 
 const ProductCard = ({
   item,
@@ -22,51 +23,66 @@ const ProductCard = ({
 
   return (
     <div
-      className="p-3 border bg-white cursor-pointer transition-transform duration-200 hover:scale-110"
+      className="p-4 border rounded-md bg-white cursor-pointer transition-all duration-200 hover:shadow-md hover:border-blue-300"
       onClick={() => onToggleExpand(item.id)}
     >
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-3">
         {!imageError && imageUrl ? (
           <img
             src={imageUrl}
             alt={item.name}
-            className="w-12 h-12 object-cover"
+            className="w-16 h-16 object-cover rounded-md"
             onError={handleImageError}
           />
         ) : (
-          <div className="w-12 h-12 bg-gray-100 flex items-center justify-center">
-            <span className="text-gray-400">No Image Available</span>
+          <div className="w-16 h-16 bg-gray-100 flex items-center justify-center rounded-md">
+            <span className="text-xs text-gray-400">No Image</span>
           </div>
         )}
 
-        <div>
-          <h3 className="font-medium">{item.name}</h3>
-          {item.aisle && <p className="text-xs text-gray-600">{item.aisle}</p>}
+        <div className="flex-1">
+          <h3 className="font-medium text-lg">{item.name}</h3>
+          {item.aisle && (
+            <p className="text-sm text-gray-600 flex items-center">
+              <span className="w-2 h-2 bg-green-400 rounded-full mr-2"></span>
+              {item.aisle}
+            </p>
+          )}
+        </div>
+
+        <div className="text-blue-500">
+          {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
         </div>
       </div>
 
       {isExpanded && (
-        <div className="mt-2 pt-2 border-t text-sm">
+        <div className="mt-3 pt-3 border-t text-sm transition-all duration-300 ease-in-out">
           {isLoading ? (
-            <p className="text-center py-2">Loading...</p>
+            <div className="flex justify-center py-4">
+              <Loader size={20} className="text-blue-500 animate-spin" />
+            </div>
           ) : nutritionData ? (
             <div>
-              <h4 className="font-medium mb-1">
+              <h4 className="font-medium mb-2 text-blue-600">
                 Nutritional Info (per Serving)
               </h4>
-              <div className="grid grid-cols-2 gap-1">
+              <div className="grid grid-cols-2 gap-2 bg-blue-50 p-3 rounded-md">
                 {nutritionData.nutrition?.nutrients
-                  ?.slice(0, 4)
+                  ?.slice(0, 6)
                   .map((nutrient) => (
                     <div key={nutrient.name} className="flex justify-between">
-                      <span>{nutrient.name}</span>
-                      <span>{formatNutritionValue(nutrient)}</span>
+                      <span className="text-gray-700">{nutrient.name}</span>
+                      <span className="font-medium">
+                        {formatNutritionValue(nutrient)}
+                      </span>
                     </div>
                   ))}
               </div>
             </div>
           ) : (
-            <p>No Nutritional Data Found</p>
+            <p className="p-3 bg-gray-50 text-center rounded-md">
+              No Nutritional Data Found
+            </p>
           )}
         </div>
       )}

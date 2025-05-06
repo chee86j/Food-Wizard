@@ -52,9 +52,9 @@ const SearchResults = ({ results }) => {
   if (!results?.length) return null;
 
   return (
-    <div>
-      <h2 className="text-lg font-medium mb-2">Results</h2>
-      <div className="grid gap-2">
+    <div className="bg-white p-4 rounded-lg shadow-sm transition-all duration-300 hover:shadow-md">
+      <h2 className="text-lg font-medium mb-3">Ingredient Results</h2>
+      <div className="grid gap-3">
         {results.map((item) => (
           <ProductCard
             key={item.id}

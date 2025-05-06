@@ -3,12 +3,16 @@ import "./App.css";
 import SearchBar from "./components/SearchBar";
 import SearchResults from "./components/SearchResults";
 import SearchHistory from "./components/SearchHistory";
+import RecipeResults from "./components/RecipeResults";
 
 function App() {
   const [results, setResults] = useState([]);
+  const [recipes, setRecipes] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingRecipes, setIsLoadingRecipes] = useState(false);
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [showRecipes, setShowRecipes] = useState(false);
 
   const handleSearch = async (query) => {
     setSearchQuery(query);
@@ -35,10 +39,46 @@ function App() {
     }
   };
 
+  const fetchRecipes = async (ingredient) => {
+    if (!ingredient) return;
+
+    setIsLoadingRecipes(true);
+
+    try {
+      const response = await fetch(
+        `http://localhost:5000/api/recipes/by-ingredient/${encodeURIComponent(
+          ingredient
+        )}`
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to Fetch Recipes");
+      }
+
+      const data = await response.json();
+      setRecipes(data);
+    } catch (err) {
+      console.error("Recipe Fetching Resulted in Error:", err);
+      setRecipes([]);
+    } finally {
+      setIsLoadingRecipes(false);
+    }
+  };
+
   // Handler History Product Selection & Future Search When Selected
   const handleSelectHistoryItem = (query) => {
     setSearchQuery(query);
     handleSearch(query);
+  };
+
+  // Toggle to Expand Recipes
+  const toggleRecipes = () => {
+    setShowRecipes((prev) => !prev);
+
+    // If Expanded & A Search Query is Present but No Recipes, Fetch Them
+    if (!showRecipes && searchQuery && recipes.length === 0) {
+      fetchRecipes(searchQuery);
+    }
   };
 
   return (
@@ -61,7 +101,30 @@ function App() {
             {isLoading ? (
               <div className="p-4 text-center">Loading...</div>
             ) : (
-              <SearchResults results={results} />
+              <>
+                <SearchResults results={results} />
+
+                {/* Toggle to Expand Recipes */}
+                {searchQuery && (
+                  <div className="mt-4">
+                    <button
+                      onClick={toggleRecipes}
+                      className="px-4 py-2 bg-blue-500 text-white disabled:bg-gray-300"
+                    >
+                      {showRecipes ? "Hide Recipes" : "Show Recipes"}
+                    </button>
+
+                    {showRecipes && (
+                      <div className="mt-3">
+                        <RecipeResults
+                          recipes={recipes}
+                          isLoading={isLoadingRecipes}
+                        />
+                      </div>
+                    )}
+                  </div>
+                )}
+              </>
             )}
           </div>
           <div className="md:col-span-1">
