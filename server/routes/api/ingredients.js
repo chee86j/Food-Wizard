@@ -14,36 +14,85 @@ app.get("/", async (req, res) => {
   }
 
   try {
-    const response = await axios.get(
+    // Get Initial Search Results
+    const searchResponse = await axios.get(
       "https://api.spoonacular.com/food/ingredients/search",
       {
         params: {
           query,
-          number: 5,
+          number: 20,
           apiKey: process.env.SPOONACULAR_API_KEY,
           metaInformation: true,
         },
       }
     );
 
-    if (!response.data.results || response.data.results.length === 0) {
+    if (
+      !searchResponse.data.results ||
+      searchResponse.data.results.length === 0
+    ) {
       return res.json([]);
     }
 
-    // Top 3 Results to Return
-    const results = response.data.results.slice(0, 3);
+    const ingredientsWithCalories = [];
 
-    // Save search results to db
+    // Process 10 or Less Search Results
+    const itemsToProcess = Math.min(searchResponse.data.results.length, 10);
+
+    for (let i = 0; i < itemsToProcess; i++) {
+      const ingredient = searchResponse.data.results[i];
+      try {
+        const nutritionResponse = await axios.get(
+          `https://api.spoonacular.com/food/ingredients/${ingredient.id}/information`,
+          {
+            params: {
+              apiKey: process.env.SPOONACULAR_API_KEY,
+              amount: 1,
+              includeNutrition: true,
+              unit: "serving",
+            },
+          }
+        );
+
+        // Find Calories in Nutrition Data
+        const nutritionData = nutritionResponse.data.nutrition;
+        const caloriesInfo = nutritionData?.nutrients?.find(
+          (n) => n.name === "Calories"
+        );
+
+        if (caloriesInfo) {
+          ingredientsWithCalories.push({
+            ...ingredient,
+            calories: caloriesInfo.amount,
+            calorieUnit: caloriesInfo.unit,
+            nutritionData: nutritionData,
+          });
+        }
+      } catch (error) {
+        console.error(
+          `Error fetching nutrition for ingredient ${ingredient.id}:`,
+          error.message
+        );
+      }
+    }
+
+    // Sort by Calories (Lowest First)
+    ingredientsWithCalories.sort((a, b) => a.calories - b.calories);
+
+    // Get the 3 Least Calorie-dense Foods
+    const leastCalorieFoods = ingredientsWithCalories.slice(0, 3);
+
+    // Save Search Results to DB
     try {
       await models.Search.create({
         query: query,
-        results: JSON.stringify(results),
+        results: JSON.stringify(leastCalorieFoods),
       });
     } catch (error) {
       console.error("Failed to Save Search Results to Database:", error);
     }
 
-    res.json(results);
+    res.json(leastCalorieFoods);
   } catch (error) {
     console.error("Search error:", error.message);
     res.status(500).json({ error: "Failed to fetch Food Data" });

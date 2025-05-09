@@ -85,6 +85,9 @@ function App() {
     <div className="min-h-screen bg-white">
       <header className="p-3 border-b">
         <h1 className="text-3xl font-bold">Food Wizard</h1>
+        <p className="text-sm text-gray-600">
+          Find your Lowest Calorie Options
+        </p>
       </header>
 
       <main className="p-4 max-w-2xl mx-auto">

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import ProductCard from "./ProductCard";
+import { Flame } from "lucide-react";
 
 /**
  * SearchResults component displaying search results
@@ -53,7 +54,16 @@ const SearchResults = ({ results }) => {
 
   return (
     <div className="bg-white p-4 rounded-lg shadow-sm transition-all duration-300 hover:shadow-md">
-      <h2 className="text-lg font-medium mb-3">Ingredient Results</h2>
+      <div className="flex items-center mb-3">
+        <h2 className="text-lg font-medium">Lowest Calorie Options</h2>
+        <div className="flex items-center ml-2 px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full">
+          <Flame size={14} className="mr-1" />
+          <span>Lowest Calories</span>
+        </div>
+      </div>
+      <p className="text-sm text-gray-500 mb-3">
+        Showing the 3 Least Calorie-dense Foods that Match Your Search
+      </p>
       <div className="grid gap-3">
         {results.map((item) => (
           <ProductCard

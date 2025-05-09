@@ -1,7 +1,7 @@
 /* Container for Product Card */
 import { useState } from "react";
 import { formatNutritionValue } from "../utils/helpers";
-import { ChevronDown, ChevronUp, Loader } from "lucide-react";
+import { ChevronDown, ChevronUp, Loader, Flame } from "lucide-react";
 
 const ProductCard = ({
   item,
@@ -46,6 +46,13 @@ const ProductCard = ({
             <p className="text-sm text-gray-600 flex items-center">
               <span className="w-2 h-2 bg-green-400 rounded-full mr-2"></span>
               {item.aisle}
+            </p>
+          )}
+          {/* Display calories if available */}
+          {item.calories && (
+            <p className="text-sm text-orange-500 font-medium flex items-center mt-1">
+              <Flame size={16} className="mr-1" />
+              {item.calories} {item.calorieUnit || "kcal"} per serving
             </p>
           )}
         </div>
