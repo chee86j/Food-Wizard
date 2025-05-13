@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { UtensilsCrossed, Check, AlertCircle } from "lucide-react";
 
-const RecipeCard = ({ recipe }) => {
+const RecipeCard = ({ recipe, onRecipeClick }) => {
   const [imageError, setImageError] = useState(false);
 
   const handleImageError = () => {
@@ -11,7 +11,10 @@ const RecipeCard = ({ recipe }) => {
   };
 
   return (
-    <div className="p-3 border">
+    <div
+      className="p-3 border hover:bg-gray-50 transition-colors cursor-pointer"
+      onClick={() => onRecipeClick(recipe.id)}
+    >
       <div className="flex items-start gap-2">
         {!imageError && recipe.image ? (
           <img

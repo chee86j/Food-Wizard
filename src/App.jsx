@@ -4,6 +4,7 @@ import SearchBar from "./components/SearchBar";
 import SearchResults from "./components/SearchResults";
 import SearchHistory from "./components/SearchHistory";
 import RecipeResults from "./components/RecipeResults";
+import RecipeDetail from "./components/RecipeDetail";
 
 function App() {
   const [results, setResults] = useState([]);
@@ -13,6 +14,7 @@ function App() {
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [showRecipes, setShowRecipes] = useState(false);
+  const [selectedRecipeId, setSelectedRecipeId] = useState(null);
 
   const handleSearch = async (query) => {
     setSearchQuery(query);
@@ -30,6 +32,11 @@ function App() {
 
       const data = await response.json();
       setResults(data);
+
+      // Automatically fetch recipes when a search is performed
+      fetchRecipes(query);
+      // Automatically show recipes section
+      setShowRecipes(true);
     } catch (err) {
       console.error("Search error:", err);
       setError("Failed to fetch Search Results. Try Again.");
@@ -69,16 +76,22 @@ function App() {
   const handleSelectHistoryItem = (query) => {
     setSearchQuery(query);
     handleSearch(query);
+    // Note: No need to add fetchRecipes here as handleSearch now does this
   };
 
   // Toggle to Expand Recipes
   const toggleRecipes = () => {
     setShowRecipes((prev) => !prev);
+  };
 
-    // If Expanded & A Search Query is Present but No Recipes, Fetch Them
-    if (!showRecipes && searchQuery && recipes.length === 0) {
-      fetchRecipes(searchQuery);
-    }
+  // Handle Recipe Click
+  const handleRecipeClick = (recipeId) => {
+    setSelectedRecipeId(recipeId);
+  };
+
+  // Close Recipe Detail Modal
+  const handleCloseRecipeDetail = () => {
+    setSelectedRecipeId(null);
   };
 
   return (
@@ -107,7 +120,7 @@ function App() {
               <>
                 <SearchResults results={results} />
 
-                {/* Toggle to Expand Recipes */}
+                {/* Toggle to Expand Recipes if Query Exists*/}
                 {searchQuery && (
                   <div className="mt-4">
                     <button
@@ -122,6 +135,7 @@ function App() {
                         <RecipeResults
                           recipes={recipes}
                           isLoading={isLoadingRecipes}
+                          onRecipeClick={handleRecipeClick}
                         />
                       </div>
                     )}
@@ -135,6 +149,13 @@ function App() {
           </div>
         </div>
       </main>
+
+      {selectedRecipeId && (
+        <RecipeDetail
+          recipeId={selectedRecipeId}
+          onClose={handleCloseRecipeDetail}
+        />
+      )}
     </div>
   );
 }

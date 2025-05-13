@@ -3,7 +3,7 @@
 import RecipeCard from "./RecipeCard";
 import { Loader, BookX, Utensils } from "lucide-react";
 
-const RecipeResults = ({ recipes, isLoading }) => {
+const RecipeResults = ({ recipes, isLoading, onRecipeClick }) => {
   if (isLoading) {
     return (
       <div>
@@ -39,7 +39,11 @@ const RecipeResults = ({ recipes, isLoading }) => {
       </h2>
       <div className="grid gap-2">
         {recipes.map((recipe) => (
-          <RecipeCard key={recipe.id} recipe={recipe} />
+          <RecipeCard
+            key={recipe.id}
+            recipe={recipe}
+            onRecipeClick={onRecipeClick}
+          />
         ))}
       </div>
     </div>

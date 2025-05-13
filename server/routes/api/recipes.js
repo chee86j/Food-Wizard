@@ -71,4 +71,30 @@ app.get("/by-ingredient/:ingredient", async (req, res) => {
   }
 });
 
+// Get Recipe Details by ID
+app.get("/:id", async (req, res) => {
+  const { id } = req.params;
+
+  if (!id) {
+    return res.status(400).json({ error: "Recipe ID is Required!!!!" });
+  }
+
+  try {
+    const response = await axios.get(
+      `https://api.spoonacular.com/recipes/${id}/information`,
+      {
+        params: {
+          apiKey: process.env.SPOONACULAR_API_KEY,
+          includeNutrition: true,
+        },
+      }
+    );
+
+    return res.json(response.data);
+  } catch (error) {
+    console.error("Recipe Detail Error:", error.message);
+    return res.status(500).json({ error: "Failed to Fetch Recipe Details" });
+  }
+});
+
 export default app;
