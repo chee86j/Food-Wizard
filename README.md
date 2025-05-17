@@ -50,6 +50,14 @@ DB_PORT=5432
 SPOONACULAR_API_KEY=your_api_key_here
 ```
 
+## Installing Dependencies
+
+From the Root Folder run:
+
+   ```
+   npm install
+   ```
+
 ## Running the Application
 
 This app uses a separate frontend & backend architecture:
