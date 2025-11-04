@@ -5,6 +5,7 @@ import SearchResults from "./components/SearchResults";
 import SearchHistory from "./components/SearchHistory";
 import RecipeResults from "./components/RecipeResults";
 import RecipeDetail from "./components/RecipeDetail";
+import { API_BASE } from "./utils/api"; // Use env-driven API base URL
 
 function App() {
   const [results, setResults] = useState([]);
@@ -22,8 +23,9 @@ function App() {
     setError(null);
 
     try {
+      // Use centralized API base to avoid hard-coded localhost
       const response = await fetch(
-        `http://localhost:5000/api/search?query=${encodeURIComponent(query)}`
+        `${API_BASE}/api/search?query=${encodeURIComponent(query)}`
       );
 
       if (!response.ok) {
@@ -52,10 +54,9 @@ function App() {
     setIsLoadingRecipes(true);
 
     try {
+      // Use centralized API base to avoid hard-coded localhost
       const response = await fetch(
-        `http://localhost:5000/api/recipes/by-ingredient/${encodeURIComponent(
-          ingredient
-        )}`
+        `${API_BASE}/api/recipes/by-ingredient/${encodeURIComponent(ingredient)}`
       );
 
       if (!response.ok) {

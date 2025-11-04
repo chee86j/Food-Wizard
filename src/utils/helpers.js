@@ -27,3 +27,11 @@ export const formatDate = (dateString) => {
 
   return date.toLocaleString();
 };
+
+// Very small sanitizer to display API-provided HTML as safe text.
+// This trades rich formatting for safety without adding dependencies.
+export const stripHtmlTags = (html) => {
+  if (!html) return "";
+  const doc = new DOMParser().parseFromString(String(html), "text/html");
+  return doc.body.textContent || "";
+};

@@ -17,15 +17,35 @@ dotenv.config({ path: path.join(__dirname, "..", ".env") });
 // Init express app
 const app = express();
 
+// Security hardening: remove the "X-Powered-By: Express" header to avoid
+// revealing framework details to clients/scanners.
+app.disable("x-powered-by");
+
 // Middleware
+// CORS: restrict allowed origins via env list while still allowing
+// same-origin/non-browser requests (no Origin header).
+// Example: ALLOWED_ORIGINS="http://localhost:5173,https://app.example.com"
+const allowedOrigins = (process.env.ALLOWED_ORIGINS || "http://localhost:5173")
+  .split(",")
+  .map((o) => o.trim())
+  .filter(Boolean);
+
 app.use(
   cors({
-    origin: "http://localhost:5173",
-    credentials: true,
+    origin: (origin, cb) => {
+      if (!origin) return cb(null, true); // allow same-origin/non-browser
+      return cb(null, allowedOrigins.includes(origin));
+    },
+    // We don't use cookies/auth, so no need to allow credentials.
+    // Keeping this off reduces risk of misconfigured cross-site cookies.
+    credentials: false,
+    methods: ["GET"], // Only GET routes are exposed by this API
   })
 );
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+
+// Limit body size to mitigate abuse and accidental large payloads.
+app.use(express.json({ limit: "64kb" }));
+app.use(express.urlencoded({ extended: true, limit: "64kb" }));
 
 // API Routes
 app.use("/api", apiRoutes);

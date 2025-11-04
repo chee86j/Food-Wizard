@@ -9,8 +9,12 @@ const app = express.Router();
 app.get("/", async (req, res) => {
   const { query } = req.query;
 
-  if (!query) {
+  // Minimal server-side validation: ensure string and reasonable length.
+  if (typeof query !== "string" || query.trim().length === 0) {
     return res.status(400).json({ error: "Search Parameter is Required" });
+  }
+  if (query.length > 100) {
+    return res.status(400).json({ error: "Query Too Long (max 100 chars)" });
   }
 
   try {
@@ -102,6 +106,12 @@ app.get("/", async (req, res) => {
 // Get Ingredient Details
 app.get("/details/:id", async (req, res) => {
   const { id } = req.params;
+
+  // Ensure numeric ID to prevent malformed requests
+  const idNum = Number(id);
+  if (!Number.isInteger(idNum) || idNum <= 0) {
+    return res.status(400).json({ error: "Invalid Ingredient ID" });
+  }
 
   try {
     const response = await axios.get(

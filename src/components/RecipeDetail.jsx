@@ -8,6 +8,8 @@ import {
   DollarSign,
   AlertCircle,
 } from "lucide-react";
+import { API_BASE } from "../utils/api"; // Centralized API base URL
+import { stripHtmlTags } from "../utils/helpers"; // Render API HTML as safe text
 
 const RecipeDetail = ({ recipeId, onClose }) => {
   const [recipe, setRecipe] = useState(null);
@@ -20,9 +22,8 @@ const RecipeDetail = ({ recipeId, onClose }) => {
 
       setLoading(true);
       try {
-        const response = await fetch(
-          `http://localhost:5000/api/recipes/${recipeId}`
-        );
+        // Use centralized API base to avoid hard-coded localhost
+        const response = await fetch(`${API_BASE}/api/recipes/${recipeId}`);
 
         if (!response.ok) {
           throw new Error("Failed to fetch recipe details");
@@ -104,10 +105,13 @@ const RecipeDetail = ({ recipeId, onClose }) => {
                   <h3 className="font-medium text-sm mb-2 border-b pb-1">
                     Summary
                   </h3>
-                  <div
-                    className="text-xs md:text-sm leading-relaxed"
-                    dangerouslySetInnerHTML={{ __html: recipe.summary }}
-                  />
+                  {/*
+                    Avoid dangerouslySetInnerHTML to reduce XSS risk since the
+                    API returns HTML. We render a plain-text version instead.
+                  */}
+                  <div className="text-xs md:text-sm leading-relaxed">
+                    {stripHtmlTags(recipe.summary)}
+                  </div>
                 </div>
               )}
 

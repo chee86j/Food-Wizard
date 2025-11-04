@@ -10,8 +10,12 @@ const app = express.Router();
 app.get("/by-ingredient/:ingredient", async (req, res) => {
   const { ingredient } = req.params;
 
+  // Basic validation to ensure presence and reasonable length.
   if (!ingredient || ingredient.trim() === "") {
     return res.status(400).json({ error: "Ingredient Parameter is Required!" });
+  }
+  if (ingredient.length > 100) {
+    return res.status(400).json({ error: "Ingredient Too Long (max 100 chars)" });
   }
 
   try {
@@ -75,7 +79,9 @@ app.get("/by-ingredient/:ingredient", async (req, res) => {
 app.get("/:id", async (req, res) => {
   const { id } = req.params;
 
-  if (!id) {
+  // Ensure numeric ID to prevent malformed requests
+  const idNum = Number(id);
+  if (!Number.isInteger(idNum) || idNum <= 0) {
     return res.status(400).json({ error: "Recipe ID is Required!!!!" });
   }
 

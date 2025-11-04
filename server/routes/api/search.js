@@ -12,8 +12,12 @@ const app = express.Router();
 app.get("/", async (req, res) => {
   const { query } = req.query;
 
-  if (!query) {
+  // Minimal validation on input to avoid abuse
+  if (typeof query !== "string" || query.trim().length === 0) {
     return res.status(400).json({ error: "Query parameter is required" });
+  }
+  if (query.length > 100) {
+    return res.status(400).json({ error: "Query Too Long (max 100 chars)" });
   }
 
   try {
@@ -56,7 +60,7 @@ app.get("/history", async (req, res) => {
         limit: 20,
       });
     } catch (dbError) {
-      console.error("Database error when Fetching Search History:", dbError);
+      console.error("Database Error when Fetching Search History:", dbError);
 
       searchHistory = await getSearchesFromFiles();
     }

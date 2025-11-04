@@ -1,33 +1,50 @@
-import js from '@eslint/js'
-import globals from 'globals'
-import reactHooks from 'eslint-plugin-react-hooks'
-import reactRefresh from 'eslint-plugin-react-refresh'
+import js from "@eslint/js";
+import { FlatCompat } from "@eslint/eslintrc";
+import globals from "globals";
+
+const compat = new FlatCompat({
+  baseDirectory: import.meta.dirname,
+});
 
 export default [
-  { ignores: ['dist'] },
+  js.configs.recommended,
+  ...compat.extends("plugin:react-hooks/recommended"),
+
   {
-    files: ['**/*.{js,jsx}'],
+    files: ["**/*.{js,jsx,mjs}"],
     languageOptions: {
-      ecmaVersion: 2020,
-      globals: globals.browser,
-      parserOptions: {
-        ecmaVersion: 'latest',
-        ecmaFeatures: { jsx: true },
-        sourceType: 'module',
+      ecmaVersion: "latest",
+      sourceType: "module",
+      globals: {
+        ...globals.browser,
+        ...globals.node,
       },
     },
-    plugins: {
-      'react-hooks': reactHooks,
-      'react-refresh': reactRefresh,
-    },
     rules: {
-      ...js.configs.recommended.rules,
-      ...reactHooks.configs.recommended.rules,
-      'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
-      'react-refresh/only-export-components': [
-        'warn',
-        { allowConstantExport: true },
-      ],
+      "prefer-const": "warn",
+      "no-unused-vars": "warn",
+      "no-console": "off",
     },
   },
-]
+  // Add test-specific configuration
+  {
+    files: ["**/*.test.{js,jsx,mjs}", "**/*testUtils.js", "**/*setupTests.js"],
+    languageOptions: {
+      globals: {
+        ...globals.jest,
+        ...globals.browser,
+        ...globals.node,
+        describe: "readonly",
+        test: "readonly",
+        it: "readonly",
+        expect: "readonly",
+        beforeEach: "readonly",
+        afterEach: "readonly",
+        beforeAll: "readonly",
+        afterAll: "readonly",
+        jest: "readonly",
+        global: "readonly",
+      },
+    },
+  },
+];

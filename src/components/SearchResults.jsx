@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import ProductCard from "./ProductCard";
 import { Flame } from "lucide-react";
+import { API_BASE } from "../utils/api"; // Centralized API base URL
 
 /**
  * SearchResults component displaying search results
@@ -29,9 +30,8 @@ const SearchResults = ({ results }) => {
       setLoadingIds((prev) => [...prev, id]);
 
       try {
-        const response = await fetch(
-          `http://localhost:5000/api/search/details/${id}`
-        );
+        // Use centralized API base to avoid hard-coded localhost
+        const response = await fetch(`${API_BASE}/api/search/details/${id}`);
 
         if (!response.ok) {
           throw new Error("Failed to fetch nutrition data");

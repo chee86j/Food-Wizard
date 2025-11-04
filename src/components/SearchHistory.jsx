@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { History, Tag, Clock, AlertCircle, Loader } from "lucide-react";
+import { API_BASE } from "../utils/api"; // Centralized API base URL
 
 // Format Date for Search History
 const formatDate = (dateString) => {
@@ -25,7 +26,8 @@ const SearchHistory = ({ onSelectQuery }) => {
     setError(null);
 
     try {
-      const response = await fetch("http://localhost:5000/api/search/history");
+      // Use centralized API base to avoid hard-coded localhost
+      const response = await fetch(`${API_BASE}/api/search/history`);
 
       if (!response.ok) {
         throw new Error("Failed to fetch search history");
