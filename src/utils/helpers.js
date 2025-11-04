@@ -14,6 +14,24 @@ export const formatNutritionValue = (nutrient) => {
   return `${nutrient.amount}${nutrient.unit}`;
 };
 
+// Format ingredient amounts so scaled servings stay readable.
+export const formatMeasuredAmount = (amount, unit, measures) => {
+  if (amount === undefined || amount === null) return "";
+
+  const normalizedAmount = Number(amount);
+  if (!Number.isFinite(normalizedAmount)) return "";
+
+  const precision = normalizedAmount >= 1 ? 2 : 3;
+  const formatted = parseFloat(normalizedAmount.toFixed(precision)).toString();
+
+  // Prefer provided unit, otherwise fall back to Spoonacular measure metadata.
+  const resolvedUnit = unit
+    ? unit.trim()
+    : measures?.us?.unitShort || measures?.metric?.unitShort || "";
+
+  return `${formatted}${resolvedUnit ? ` ${resolvedUnit}` : ""}`.trim();
+};
+
 // Date Formatter
 export const formatDate = (dateString) => {
   if (!dateString) return "Recent";

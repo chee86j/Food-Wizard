@@ -9,18 +9,24 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { API_BASE } from "../utils/api"; // Centralized API base URL
-import { stripHtmlTags } from "../utils/helpers"; // Render API HTML as safe text
+import {
+  stripHtmlTags,
+  formatMeasuredAmount,
+} from "../utils/helpers"; // Render API HTML as safe text & format servings
 
 const RecipeDetail = ({ recipeId, onClose }) => {
   const [recipe, setRecipe] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [baseServings, setBaseServings] = useState(1);
+  const [currentServings, setCurrentServings] = useState(1);
 
   useEffect(() => {
     const fetchRecipeDetails = async () => {
       if (!recipeId) return;
 
       setLoading(true);
+      setError(null);
       try {
         // Use centralized API base to avoid hard-coded localhost
         const response = await fetch(`${API_BASE}/api/recipes/${recipeId}`);
@@ -31,6 +37,10 @@ const RecipeDetail = ({ recipeId, onClose }) => {
 
         const data = await response.json();
         setRecipe(data);
+        // Track original servings (default 1) for proportional scaling.
+        const fetchedServings = Number(data?.servings) || 1;
+        setBaseServings(fetchedServings);
+        setCurrentServings(fetchedServings);
       } catch (err) {
         console.error("Error fetching recipe details:", err);
         setError("Failed to load recipe details. Please try again.");
@@ -46,9 +56,44 @@ const RecipeDetail = ({ recipeId, onClose }) => {
     <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg w-full max-w-md md:max-w-2xl max-h-[90vh] overflow-y-auto">
         <div className="sticky top-0 bg-white z-10 p-3 border-b flex justify-between items-center">
-          <h2 className="text-lg md:text-xl font-bold truncate">
-            {loading ? "Recipe Details" : recipe?.title}
-          </h2>
+          <div className="flex items-center gap-3">
+            <h2 className="text-lg md:text-xl font-bold truncate">
+              {loading ? "Recipe Details" : recipe?.title}
+            </h2>
+            {!loading && !error && (
+              <div className="flex items-center gap-2 bg-gray-100 rounded-full px-3 py-1 shadow-inner">
+                {/* Serving stepper lets users scale ingredient amounts on the fly */}
+                <button
+                  type="button"
+                  onClick={() =>
+                    setCurrentServings((prev) => Math.max(1, prev - 1))
+                  }
+                  className="text-gray-600 hover:text-gray-900 focus:outline-none"
+                  aria-label="Decrease servings"
+                >
+                  -
+                </button>
+                <div className="flex flex-col text-xs text-center leading-tight">
+                  <span className="font-semibold text-gray-700">
+                    {currentServings}
+                  </span>
+                  <span className="uppercase tracking-wide text-[10px] text-gray-500">
+                    Servings
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setCurrentServings((prev) => Math.min(prev + 1, 20))
+                  }
+                  className="text-gray-600 hover:text-gray-900 focus:outline-none"
+                  aria-label="Increase servings"
+                >
+                  +
+                </button>
+              </div>
+            )}
+          </div>
           <button onClick={onClose} className="p-1">
             <X size={18} />
           </button>
@@ -89,9 +134,13 @@ const RecipeDetail = ({ recipeId, onClose }) => {
                 {recipe.servings && (
                   <span className="inline-flex items-center text-xs bg-gray-100 px-2 py-1 rounded">
                     <UtensilsCrossed size={14} className="mr-1" />
-                    {recipe.servings} servings
+                    Base {recipe.servings} servings
                   </span>
                 )}
+                <span className="inline-flex items-center text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">
+                  <UtensilsCrossed size={14} className="mr-1" />
+                  Adjusted {currentServings}
+                </span>
                 {recipe.aggregateLikes > 0 && (
                   <span className="inline-flex items-center text-xs bg-gray-100 px-2 py-1 rounded">
                     <Heart size={14} className="mr-1 text-red-500" />
@@ -119,11 +168,33 @@ const RecipeDetail = ({ recipeId, onClose }) => {
                 <div className="mb-6 text-left">
                   <h3 className="font-medium text-sm mb-2 border-b pb-1">
                     Ingredients
+                    <span className="text-xs font-normal text-gray-500 ml-2">
+                      Adjusted for {currentServings} serving
+                      {currentServings > 1 ? "s" : ""}
+                    </span>
                   </h3>
                   <ul className="list-disc pl-5 text-xs md:text-sm space-y-1">
-                    {recipe.extendedIngredients.map((ingredient, index) => (
-                      <li key={index}>{ingredient.original}</li>
-                    ))}
+                    {recipe.extendedIngredients.map((ingredient, index) => {
+                      const baselineServings = Math.max(baseServings, 1); // Guard against divide-by-zero when API omits servings
+                      const scaledAmount =
+                        (ingredient.amount || 0) *
+                        (currentServings / baselineServings);
+
+                      return (
+                        <li key={index} className="leading-relaxed">
+                          <span className="font-medium text-gray-700">
+                            {formatMeasuredAmount(
+                              scaledAmount,
+                              ingredient.unit,
+                              ingredient.measures
+                            )}
+                          </span>{" "}
+                          <span className="text-gray-600">
+                            {ingredient.originalName || ingredient.name}
+                          </span>
+                        </li>
+                      );
+                    })}
                   </ul>
                 </div>
               )}
