@@ -1,0 +1,21 @@
+# Global ignores
+.git
+.gitignore
+node_modules
+npm-debug.log*
+dist
+coverage
+.vscode
+.DS_Store
+.env
+.env.*
+
+# Server specific
+server/node_modules
+server/storage/searches
+server/coverage
+
+# Build artifacts
+public/build
+build
+*.local

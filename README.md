@@ -231,3 +231,64 @@ Include screenshots or logs of successful builds.
 Tag as v1.0.0-dockerized.
 
 Push to GitHub main branch
+
+---
+
+## Docker Deployment Guide
+
+The app now ships with just the essentials for containers:
+
+- `Dockerfile` – a multi-stage build that exposes `server` and `web` targets so the API and frontend images can be produced from the same source without extra files.
+- `docker-compose.yml` – orchestrates Postgres, the API, and the frontend with healthchecks and persistent volumes.
+- `docker/nginx.conf` – nginx config that adds the `/healthz` endpoint and forces SPA fallbacks; no other helper scripts are needed.
+
+### 1. Configure Environment
+
+1. Copy `.env.example` to `.env` and update at least `SPOONACULAR_API_KEY`.  
+   Keep `DB_HOST=db` so the API talks to the Compose Postgres service.  
+   Adjust `VITE_API_BASE_URL` if you expose the API on something other than `http://localhost:5000`.
+2. For other environments, point Compose at a different env file: `docker compose --env-file .env.prod up -d`.
+3. Long-term secrets should live in a vault (AWS Secrets Manager, Doppler, etc.); mount them as env vars or files instead of baking them into container images.
+
+### 2. Build & Run Locally
+
+```bash
+docker compose up --build
+```
+
+This builds the server + client images and starts all three services. Ports exposed to the host:
+
+- Frontend → http://localhost:4173
+- API → http://localhost:5000 (`/api/health` is used for the container healthcheck)
+
+The Postgres container is only reachable inside the Compose network by default to reduce host surface area. If you need `psql` locally, temporarily add a `ports` block for the `db` service.
+
+### 3. Verify Health & Data
+
+- Frontend: `curl -f http://localhost:4173/healthz`
+- API: `curl -f http://localhost:5000/api/health`
+- Database readiness is managed entirely by Compose: the API service waits until the Postgres healthcheck passes before it starts.
+- Persistent storage:
+  - `db-data` volume stores Postgres data files.
+  - `search-backups` volume stores JSON search history files created by `server/utils/searchHelpers.js`.
+
+### 4. Useful Commands
+
+```bash
+# Follow logs from a single service
+docker compose logs -f server
+
+# Inspect the Postgres DB interactively
+docker compose exec db psql -U "$POSTGRES_USER" "$POSTGRES_DB"
+
+# Drop everything (containers + volumes)
+docker compose down -v
+```
+
+### 5. Overrides
+
+- Override one-off values inline: `VITE_API_BASE_URL=https://api.example.com docker compose up --build`.
+- Pass a different env file per environment with `--env-file`.
+- Build args are forwarded through Compose, so CI/CD can bake prod URLs into the frontend image without editing files.
+
+Containers run as non-root users where possible, expose only the needed ports, and include Docker healthchecks so Compose can restart unhealthy services automatically. Following these steps keeps local dev parity with production-style builds while keeping the Docker surface area minimal.
