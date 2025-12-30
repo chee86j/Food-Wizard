@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { History, Tag, Clock, AlertCircle, Loader } from "lucide-react";
 import { API_BASE } from "../utils/api"; // Centralized API base URL
 
@@ -16,12 +16,12 @@ const formatDate = (dateString) => {
   return date.toLocaleString();
 };
 
-const SearchHistory = ({ onSelectQuery }) => {
+const SearchHistory = ({ onSelectQuery, refreshKey }) => {
   const [history, setHistory] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const fetchSearchHistory = async () => {
+  const fetchSearchHistory = useCallback(async () => {
     setIsLoading(true);
     setError(null);
 
@@ -41,12 +41,12 @@ const SearchHistory = ({ onSelectQuery }) => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   // Load History when Component Mounts
   useEffect(() => {
     fetchSearchHistory();
-  }, []);
+  }, [fetchSearchHistory, refreshKey]);
 
   const handleSelectQuery = (query) => {
     if (onSelectQuery) {
@@ -119,7 +119,7 @@ const SearchHistory = ({ onSelectQuery }) => {
             <div className="flex justify-between mt-1">
               <div className="text-xs text-gray-500 flex items-center">
                 <Clock size={12} className="mr-1" />
-                {formatDate(item.timestamp)}
+                {formatDate(item.timestamp || item.created_at)}
               </div>
               {doesItHaveARecipe(item.query) && (
                 <div className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full flex items-center">

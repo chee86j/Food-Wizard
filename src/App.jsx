@@ -16,6 +16,7 @@ function App() {
   const [searchQuery, setSearchQuery] = useState("");
   const [showRecipes, setShowRecipes] = useState(false);
   const [selectedRecipeId, setSelectedRecipeId] = useState(null);
+  const [historyRefreshKey, setHistoryRefreshKey] = useState(0);
 
   const handleSearch = async (query) => {
     setSearchQuery(query);
@@ -39,6 +40,7 @@ function App() {
       fetchRecipes(query);
       // Automatically show recipes section
       setShowRecipes(true);
+      setHistoryRefreshKey((prev) => prev + 1);
     } catch (err) {
       console.error("Search error:", err);
       setError("Failed to fetch Search Results. Try Again.");
@@ -65,6 +67,7 @@ function App() {
 
       const data = await response.json();
       setRecipes(data);
+      setHistoryRefreshKey((prev) => prev + 1);
     } catch (err) {
       console.error("Recipe Fetching Resulted in Error:", err);
       setRecipes([]);
@@ -146,7 +149,10 @@ function App() {
             )}
           </div>
           <div className="md:col-span-1">
-            <SearchHistory onSelectQuery={handleSelectHistoryItem} />
+            <SearchHistory
+              onSelectQuery={handleSelectHistoryItem}
+              refreshKey={historyRefreshKey}
+            />
           </div>
         </div>
       </main>
