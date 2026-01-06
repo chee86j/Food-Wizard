@@ -13,18 +13,22 @@ app.get("/", async (req, res) => {
     let searches = [];
 
     try {
+      // Prefer DB records for the most recent history.
       searches = await models.Search.findAll({
         order: [["created_at", "DESC"]],
         limit: 20,
       });
     } catch (dbError) {
       console.error("Database Error when Fetching Search History:", dbError);
+      // Fall back to file-backed history if DB access fails.
       searches = await getSearchesFromFiles();
     }
 
+    // Normalize DB/file entries into a consistent response shape.
     const formattedSearches = searches.map((search, index) => {
       const item = search?.toJSON ? search.toJSON() : search;
 
+      // Resolve a stable timestamp from the record or use "now".
       let timestamp;
       if (item.created_at) {
         timestamp =
@@ -40,6 +44,7 @@ app.get("/", async (req, res) => {
       return {
         id: item.id || `file-${timestamp}-${index}`,
         query: item.query,
+        // Parse stored JSON results or default to an empty list.
         results: safeJsonParse(item.results) || [],
         timestamp,
       };

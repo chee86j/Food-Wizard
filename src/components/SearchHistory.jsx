@@ -43,7 +43,7 @@ const SearchHistory = ({ onSelectQuery, refreshKey }) => {
     }
   }, []);
 
-  // Load History when Component Mounts
+  // Load history on mount and when refreshKey changes.
   useEffect(() => {
     fetchSearchHistory();
   }, [fetchSearchHistory, refreshKey]);

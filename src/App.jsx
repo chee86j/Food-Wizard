@@ -16,6 +16,7 @@ function App() {
   const [searchQuery, setSearchQuery] = useState("");
   const [showRecipes, setShowRecipes] = useState(false);
   const [selectedRecipeId, setSelectedRecipeId] = useState(null);
+  // Bump this key to trigger SearchHistory to re-fetch.
   const [historyRefreshKey, setHistoryRefreshKey] = useState(0);
 
   const handleSearch = async (query) => {
@@ -40,6 +41,7 @@ function App() {
       fetchRecipes(query);
       // Automatically show recipes section
       setShowRecipes(true);
+      // Trigger history refresh after a search completes.
       setHistoryRefreshKey((prev) => prev + 1);
     } catch (err) {
       console.error("Search error:", err);
@@ -67,6 +69,7 @@ function App() {
 
       const data = await response.json();
       setRecipes(data);
+      // Trigger history refresh after recipe searches as well.
       setHistoryRefreshKey((prev) => prev + 1);
     } catch (err) {
       console.error("Recipe Fetching Resulted in Error:", err);

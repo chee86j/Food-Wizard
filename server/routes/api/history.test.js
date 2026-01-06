@@ -3,6 +3,7 @@ import { app } from "../../index.js";
 import { models } from "../../db.js";
 import { getSearchesFromFiles } from "../../utils/searchHelpers.js";
 
+// Mock database and file helper dependencies.
 jest.mock("../../db.js", () => ({
   models: {
     Search: {
@@ -28,6 +29,7 @@ describe("History API Endpoints", () => {
   });
 
   test("GET /history returns timestamp and parsed results", async () => {
+    // Mock DB response with a Date-based created_at.
     models.Search.findAll.mockResolvedValueOnce([
       {
         toJSON: () => ({
@@ -41,6 +43,7 @@ describe("History API Endpoints", () => {
 
     const response = await request(app).get("/api/search/history");
 
+    // Expect normalized response shape.
     expect(response.status).toBe(200);
     expect(Array.isArray(response.body)).toBe(true);
     expect(response.body[0]).toHaveProperty("timestamp");
@@ -49,6 +52,7 @@ describe("History API Endpoints", () => {
   });
 
   test("GET /history falls back to file storage if DB fails", async () => {
+    // Force DB failure and return file-backed history.
     models.Search.findAll.mockRejectedValueOnce(new Error("DB error"));
     getSearchesFromFiles.mockResolvedValueOnce([
       {
@@ -66,4 +70,3 @@ describe("History API Endpoints", () => {
     expect(response.body[0]).toHaveProperty("timestamp");
   });
 });
-
